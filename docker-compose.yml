@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  token-inventory:
+    build: .
+    ports:
+      - "8080:80"
+    environment:
+      # Authentication method: "azure", "ldap", or "none"
+      AUTH_METHOD: "${AUTH_METHOD:-ldap}"
+
+      # Azure AD / Entra ID Configuration
+      AZURE_AD_TENANT_ID: "${AZURE_AD_TENANT_ID}"
+      AZURE_AD_CLIENT_ID: "${AZURE_AD_CLIENT_ID}"
+      AZURE_AD_CLIENT_SECRET: "${AZURE_AD_CLIENT_SECRET}"
+      AZURE_AD_REDIRECT_URI: "${AZURE_AD_REDIRECT_URI:-http://localhost:8080/index.php}"
+      AZURE_AD_ALLOWED_GROUPS: "${AZURE_AD_ALLOWED_GROUPS:-}"
+
+      # LDAP / Local AD Configuration (multiple hosts supported, comma-separated)
+      LDAP_HOST: "${LDAP_HOST}"
+      LDAP_PORT: "${LDAP_PORT:-389}"
+      LDAP_USE_TLS: "${LDAP_USE_TLS:-false}"
+      LDAP_BASE_DN: "${LDAP_BASE_DN}"
+      LDAP_BIND_DN: "${LDAP_BIND_DN}"
+      LDAP_BIND_PASSWORD: "${LDAP_BIND_PASSWORD}"
+      LDAP_USER_FILTER: "${LDAP_USER_FILTER:-(sAMAccountName={username})}"
+      LDAP_ALLOWED_GROUPS: "${LDAP_ALLOWED_GROUPS:-}"
+      LDAP_TIMEOUT: "${LDAP_TIMEOUT:-10}"
+
+      # Microsoft Graph API Configuration
+      GRAPH_TENANT_ID: "${GRAPH_TENANT_ID}"
+      GRAPH_CLIENT_ID: "${GRAPH_CLIENT_ID}"
+      GRAPH_CLIENT_SECRET: "${GRAPH_CLIENT_SECRET}"
+    volumes:
+      # For development: mount source code
+      - ./:/var/www/html
+    restart: unless-stopped
+    # Uncomment if you need to connect to a domain controller on the host network
+    # extra_hosts:
+    #   - "ldap.company.com:host-gateway"

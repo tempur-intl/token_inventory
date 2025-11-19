@@ -1,0 +1,163 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: token-inventory
+  namespace: token-inventory
+  labels:
+    app: token-inventory
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: token-inventory
+  template:
+    metadata:
+      labels:
+        app: token-inventory
+    spec:
+      containers:
+      - name: token-inventory
+        image: tempursealy/token-inventory:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+          name: http
+        env:
+        # Authentication method selector
+        - name: AUTH_METHOD
+          valueFrom:
+            secretKeyRef:
+              name: token-inventory-secrets
+              key: AUTH_METHOD
+        # Azure AD / Entra ID configuration
+        - name: AZURE_AD_TENANT_ID
+          valueFrom:
+            secretKeyRef:
+              name: token-inventory-secrets
+              key: AZURE_AD_TENANT_ID
+              optional: true
+        - name: AZURE_AD_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: token-inventory-secrets
+              key: AZURE_AD_CLIENT_ID
+              optional: true
+        - name: AZURE_AD_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: token-inventory-secrets
+              key: AZURE_AD_CLIENT_SECRET
+              optional: true
+        - name: AZURE_AD_REDIRECT_URI
+          valueFrom:
+            secretKeyRef:
+              name: token-inventory-secrets
+              key: AZURE_AD_REDIRECT_URI
+              optional: true
+        - name: AZURE_AD_ALLOWED_GROUPS
+          valueFrom:
+            secretKeyRef:
+              name: token-inventory-secrets
+              key: AZURE_AD_ALLOWED_GROUPS
+              optional: true
+        # LDAP / Local AD configuration
+        - name: LDAP_HOST
+          valueFrom:
+            secretKeyRef:
+              name: token-inventory-secrets
+              key: LDAP_HOST
+              optional: true
+        - name: LDAP_PORT
+          valueFrom:
+            secretKeyRef:
+              name: token-inventory-secrets
+              key: LDAP_PORT
+              optional: true
+        - name: LDAP_USE_TLS
+          valueFrom:
+            secretKeyRef:
+              name: token-inventory-secrets
+              key: LDAP_USE_TLS
+              optional: true
+        - name: LDAP_BASE_DN
+          valueFrom:
+            secretKeyRef:
+              name: token-inventory-secrets
+              key: LDAP_BASE_DN
+              optional: true
+        - name: LDAP_BIND_DN
+          valueFrom:
+            secretKeyRef:
+              name: token-inventory-secrets
+              key: LDAP_BIND_DN
+              optional: true
+        - name: LDAP_BIND_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: token-inventory-secrets
+              key: LDAP_BIND_PASSWORD
+              optional: true
+        - name: LDAP_USER_FILTER
+          valueFrom:
+            secretKeyRef:
+              name: token-inventory-secrets
+              key: LDAP_USER_FILTER
+              optional: true
+        - name: LDAP_ALLOWED_GROUPS
+          valueFrom:
+            secretKeyRef:
+              name: token-inventory-secrets
+              key: LDAP_ALLOWED_GROUPS
+              optional: true
+        - name: LDAP_TIMEOUT
+          valueFrom:
+            secretKeyRef:
+              name: token-inventory-secrets
+              key: LDAP_TIMEOUT
+              optional: true
+        - name: GRAPH_TENANT_ID
+          valueFrom:
+            secretKeyRef:
+              name: token-inventory-secrets
+              key: GRAPH_TENANT_ID
+              optional: true
+        - name: GRAPH_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: token-inventory-secrets
+              key: GRAPH_CLIENT_ID
+              optional: true
+        - name: GRAPH_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: token-inventory-secrets
+              key: GRAPH_CLIENT_SECRET
+              optional: true
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 33  # www-data user
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+      securityContext:
+        fsGroup: 33
